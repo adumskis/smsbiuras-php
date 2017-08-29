@@ -1,0 +1,20 @@
+{
+  "name": "adumskis/smsbiuras-php",
+  "description": "Smsbiuras.lt PHP API client",
+  "type": "package",
+  "require": {
+    "guzzlehttp/guzzle": "^6.3",
+    "nesbot/carbon": "~1.18"
+  },
+  "authors": [
+    {
+      "name": "Algirdas Dumskis",
+      "email": "algirdasdum@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Adumskis\\SmsBiurasPhp\\": "src"
+    }
+  }
+}
