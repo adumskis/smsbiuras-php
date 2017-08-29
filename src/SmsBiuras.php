@@ -13,8 +13,7 @@ class SmsBiuras
     /**
      * SmsBiuras base URL
      */
-    const BASE_URL = 'https://requestb.in/164uf7z1';
-    //const BASE_URL = 'https://smsbiuras.lt/';
+    const BASE_URI = 'https://smsbiuras.lt/';
 
     /**
      * @var Client
@@ -29,12 +28,11 @@ class SmsBiuras
 
     /**
      * SmsBiuras constructor.
-     * @param string $username
-     * @param string $password
+     * @param array $config
      */
     public function __construct($config = [])
     {
-        $this->client = new Client(['base_uri' => self::BASE_URL]);
+        $this->client = new Client(['base_uri' => self::BASE_URI]);
         $this->config = new Config($config);
         if (!$this->config->exists('username') || !$this->config->exists('password')) {
             throw new \InvalidArgumentException('Missing username or password parameters in config');
@@ -81,55 +79,58 @@ class SmsBiuras
 
         $result = $this->client->request('GET', 'send.php', [
             'query' => $query,
+            'verify' => false
         ]);
 
-        if (!$result->getStatusCode() != 200) {
+        if ($result->getStatusCode() != 200) {
             throw new \Exception('Response code: ' . $result->getStatusCode());
         }
 
         $resultContent = explode(':', $result->getBody()->getContents());
 
-        if (count($resultContent) != 2) {
+        if (count($resultContent) !== 2) {
             throw new \Exception('Can\'t parse response');
         }
 
-        if ($resultContent[0] != 'OK') {
+
+
+        if (preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $resultContent[0]) != 'OK') {
             throw new \Exception($resultContent[1]);
         }
 
+        dd($resultContent);
         return $resultContent[1];
     }
 
     /**
      * Get one or more SMS status
      *
-     * @param integer|null $id
-     * @param string|null $from
-     * @param string|null $to
+     * @param array $parameters
      * @return array
      * @throws \Exception
      */
-    public function report($id = null, $from = null, $to = null)
+    public function report($parameters = [])
     {
         $query = [
-            'username' => $this->username,
-            'password' => $this->password,
+            'username' => $this->config->get('username'),
+            'password' => $this->config->get('password'),
         ];
 
-        if (!is_null($id)) {
-            $query['msg_id'] = $id;
+        if (isset($parameters['id'])) {
+            $query['msg_id'] = $parameters['id'];
         }
 
-        if (!is_null($from)) {
-            $query['from'] = $from;
+        if (isset($parameters['from'])) {
+            $query['from'] = $parameters['from'];
         }
 
-        if (!is_null($to)) {
-            $query['to'] = $to;
+        if (isset($parameters['to'])) {
+            $query['to'] = $parameters['to'];
         }
 
         $result = $this->client->request('GET', 'dlr.php', [
             'query' => $query,
+            'verify' => false
         ]);
 
         if ($result->getStatusCode() != 200) {
@@ -151,6 +152,10 @@ class SmsBiuras
         return $result;
     }
 
+    /**
+     * @param int $minutes
+     * @return string
+     */
     private function convertToHoursMins($minutes)
     {
         if ($minutes < 1) {
@@ -162,6 +167,10 @@ class SmsBiuras
         return sprintf('%02d:%02d', $hours, $minutes);
     }
 
+    /**
+     * @param int $seconds
+     * @return string
+     */
     private function convertToDaysHoursMinsSecs($seconds)
     {
         if ($seconds < 1) {

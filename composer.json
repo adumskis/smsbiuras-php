@@ -3,8 +3,7 @@
   "description": "Smsbiuras.lt PHP API client",
   "type": "package",
   "require": {
-    "guzzlehttp/guzzle": "^6.3",
-    "nesbot/carbon": "~1.18"
+    "guzzlehttp/guzzle": "^6.3"
   },
   "authors": [
     {
