@@ -97,8 +97,7 @@ class SmsBiuras
         if (preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $resultContent[0]) != 'OK') {
             throw new \Exception($resultContent[1]);
         }
-
-        dd($resultContent);
+        
         return $resultContent[1];
     }
 
